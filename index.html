@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RCCE-IM Decision Tool – WHO/Europe</title>
+  <meta name="description" content="A structured decision-making tool for Risk Communication, Community Engagement and Infodemic Management (RCCE-IM) based on the Time–Quality–Resources triangle.">
+  <style>
+    :root {
+      --c-blue: #185FA5; --c-blue-bg: #E6F1FB; --c-blue-t: #0C447C;
+      --c-teal: #0F6E56; --c-teal-bg: #E1F5EE; --c-teal-t: #085041;
+      --c-coral: #993C1D; --c-coral-bg: #FAECE7; --c-coral-t: #712B13;
+      --c-amber-bg: #FAEEDA; --c-amber-t: #633806;
+      --bg: #ffffff;
+      --bg2: #f6f5f1;
+      --bg3: #efefeb;
+      --text: #1a1a18;
+      --text2: #6b6a64;
+      --text3: #9c9a92;
+      --border: rgba(0,0,0,0.12);
+      --border2: rgba(0,0,0,0.22);
+      --radius: 10px;
+      --radius-lg: 14px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1a; --bg2: #252522; --bg3: #2e2e2b;
+        --text: #e8e6df; --text2: #9c9a92; --text3: #6b6a64;
+        --border: rgba(255,255,255,0.12); --border2: rgba(255,255,255,0.22);
+        --c-blue-bg: #042C53; --c-blue-t: #85B7EB;
+        --c-teal-bg: #04342C; --c-teal-t: #5DCAA5;
+        --c-coral-bg: #4A1B0C; --c-coral-t: #F0997B;
+        --c-amber-bg: #412402; --c-amber-t: #FAC775;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      background: var(--bg3);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 3rem;
+    }
+
+    /* Header */
+    header {
+      background: var(--bg);
+      border-bottom: 0.5px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .who-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--c-blue);
+      background: var(--c-blue-bg); padding: 4px 9px;
+      border-radius: 20px; white-space: nowrap;
+    }
+    header h1 { font-size: 15px; font-weight: 600; color: var(--text); }
+    header p { font-size: 11px; color: var(--text2); margin-top: 1px; }
+    .lang-switch { display: flex; gap: 4px; flex-shrink: 0; }
+    .lb {
+      font-size: 11px; padding: 4px 10px; border-radius: 20px;
+      border: 0.5px solid var(--border2); background: transparent;
+      color: var(--text2); cursor: pointer; transition: all .15s;
+    }
+    .lb.on { background: var(--text); color: var(--bg); border-color: transparent; }
+
+    /* Main layout */
+    main {
+      max-width: 720px;
+      margin: 2rem auto;
+      padding: 0 1.25rem;
+    }
+
+    /* Card */
+    .card {
+      background: var(--bg);
+      border-radius: var(--radius-lg);
+      border: 0.5px solid var(--border);
+      overflow: hidden;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 0.5px solid var(--border);
+      overflow-x: auto;
+      background: var(--bg2);
+    }
+    .tab {
+      font-size: 12px; padding: 10px 16px; cursor: pointer;
+      color: var(--text2); border-bottom: 2px solid transparent;
+      margin-bottom: -0.5px; background: transparent;
+      border-top: none; border-left: none; border-right: none;
+      white-space: nowrap; transition: color .15s;
+    }
+    .tab.on { color: var(--text); font-weight: 600; border-bottom-color: var(--c-blue); }
+    .panel { display: none; padding: 1.25rem; }
+    .panel.on { display: block; }
+
+    /* Scenario cards */
+    .scards { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; margin-bottom: 1rem; }
+    @media (max-width: 500px) { .scards { grid-template-columns: 1fr; } }
+    .sc {
+      background: var(--bg2); border: 0.5px solid var(--border);
+      border-radius: var(--radius); padding: 11px 13px;
+      cursor: pointer; transition: border .12s, background .12s;
+    }
+    .sc:hover { background: var(--bg3); }
+    .sc.as1 { border: 2px solid var(--c-blue); background: var(--c-blue-bg); }
+    .sc.as2 { border: 2px solid var(--c-teal); background: var(--c-teal-bg); }
+    .sc.as3 { border: 2px solid var(--c-coral); background: var(--c-coral-bg); }
+    .chip { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+    .chip.s1 { color: var(--c-blue); } .chip.s2 { color: var(--c-teal); } .chip.s3 { color: var(--c-coral); }
+    .scname { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; line-height: 1.3; }
+    .scdesc { font-size: 11px; color: var(--text2); line-height: 1.35; }
+
+    /* Triangle */
+    .tri-wrap { width: 100%; margin-bottom: 1rem; }
+    .tri-wrap svg { display: block; width: 100%; touch-action: manipulation; }
+
+    /* Detail box */
+    .det { background: var(--bg2); border-radius: var(--radius); padding: 14px 16px; display: none; }
+    .det.on { display: block; }
+    .bgs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .bg { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 600; }
+    .dett { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .detb { font-size: 13px; color: var(--text2); line-height: 1.65; margin-bottom: 8px; }
+    .detr { font-size: 12px; color: var(--text3); display: flex; gap: 5px; }
+    .exp-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .eb {
+      font-size: 12px; padding: 6px 14px; border-radius: 8px;
+      border: 0.5px solid var(--border2); background: transparent;
+      color: var(--text); cursor: pointer; transition: background .12s;
+    }
+    .eb:hover { background: var(--bg3); }
+
+    /* Quiz */
+    .qg { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+    @media (max-width: 500px) { .qg { grid-template-columns: 1fr; } }
+    .qb label { font-size: 12px; font-weight: 600; color: var(--text); display: block; margin-bottom: 5px; }
+    .qh { font-size: 10px; color: var(--text3); margin-bottom: 5px; margin-top: -2px; line-height: 1.35; }
+    .sr { display: flex; align-items: center; gap: 10px; }
+    .sr input[type=range] { flex: 1; accent-color: var(--c-blue); }
+    .sv { font-size: 14px; font-weight: 600; color: var(--text); min-width: 20px; text-align: right; }
+    .sugbtn {
+      width: 100%; padding: 10px; border-radius: 10px;
+      border: 0.5px solid var(--border2); background: var(--bg2);
+      color: var(--text); font-size: 13px; font-weight: 600;
+      cursor: pointer; margin-bottom: 1rem; transition: background .12s;
+    }
+    .sugbtn:hover { background: var(--bg3); }
+    .sugbox { border-radius: var(--radius); padding: 14px 16px; display: none; }
+    .sugbox.on { display: block; }
+    .sh { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+    .sb { font-size: 12px; color: var(--text2); line-height: 1.6; }
+    .sap {
+      font-size: 12px; padding: 6px 14px; border-radius: 8px;
+      border: 0.5px solid var(--border2); background: transparent;
+      cursor: pointer; margin-top: 10px; color: var(--text);
+    }
+    .sap:hover { background: var(--bg3); }
+
+    /* Custom cases */
+    .cform { background: var(--bg2); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 1rem; }
+    .fr { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    @media (max-width: 500px) { .fr { grid-template-columns: 1fr; } }
+    .fl { font-size: 11px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
+    .fi {
+      width: 100%; padding: 8px 10px; border-radius: 8px;
+      border: 0.5px solid var(--border2); background: var(--bg);
+      color: var(--text); font-size: 12px; font-family: inherit;
+    }
+    .fi:focus { outline: 2px solid var(--c-blue); outline-offset: 1px; }
+    .fa textarea {
+      width: 100%; min-height: 64px; resize: vertical;
+      padding: 8px 10px; border-radius: 8px; border: 0.5px solid var(--border2);
+      background: var(--bg); color: var(--text); font-size: 12px;
+      font-family: inherit; margin-bottom: 10px;
+    }
+    .fa textarea:focus { outline: 2px solid var(--c-blue); outline-offset: 1px; }
+    .addb {
+      font-size: 12px; padding: 7px 16px; border-radius: 8px;
+      border: 0.5px solid var(--border2); background: var(--bg);
+      color: var(--text); cursor: pointer; font-weight: 600;
+    }
+    .addb:hover { background: var(--text); color: var(--bg); }
+    .clist { display: flex; flex-direction: column; gap: 6px; }
+    .ci {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: var(--radius); padding: 10px 12px;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+    }
+    .cit { font-size: 13px; font-weight: 600; color: var(--text); }
+    .cim { font-size: 11px; color: var(--text2); }
+    .cdel {
+      font-size: 12px; color: var(--text3); cursor: pointer;
+      padding: 2px 6px; border-radius: 4px; border: 0.5px solid var(--border);
+      background: transparent; flex-shrink: 0;
+    }
+    .cdel:hover { color: var(--c-coral); border-color: var(--c-coral); }
+
+    /* Footer */
+    footer {
+      max-width: 720px; margin: 1.5rem auto 0; padding: 0 1.25rem;
+      font-size: 11px; color: var(--text3);
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+    }
+    footer a { color: var(--c-blue); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div>
+      <h1 id="tt">RCCE-IM Decision Tool</h1>
+      <p id="ts">Zeit – Qualität – Ressourcen</p>
+    </div>
+  </div>
+  <div class="lang-switch">
+    <button class="lb on" onclick="setL('en')">EN</button>
+    <button class="lb" onclick="setL('de')">DE</button>
+    <button class="lb" onclick="setL('fr')">FR</button>
+    <button class="lb" onclick="setL('es')">ES</button>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="tabs">
+      <button class="tab on" onclick="showTab('ov')" id="tab-ov">Übersicht</button>
+      <button class="tab" onclick="showTab('qz')" id="tab-qz">Entscheidungshilfe</button>
+      <button class="tab" onclick="showTab('cu')" id="tab-cu">Eigene Fälle</button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div id="panel-ov" class="panel on">
+      <div class="scards" id="scards"></div>
+      <div class="tri-wrap">
+        <svg id="trisvg" viewBox="0 0 560 310" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="glow2">
+              <feGaussianBlur stdDeviation="6" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <polygon id="tfill" points="280,22 44,288 516,288" fill="transparent"/>
+          <line id="ln1" x1="280" y1="22" x2="44" y2="288" stroke="rgba(0,0,0,0.15)" stroke-width="1.5" stroke-linecap="round"/>
+          <line id="ln2" x1="44" y1="288" x2="516" y2="288" stroke="rgba(0,0,0,0.15)" stroke-width="1.5" stroke-linecap="round"/>
+          <line id="ln3" x1="280" y1="22" x2="516" y2="288" stroke="rgba(0,0,0,0.15)" stroke-width="1.5" stroke-linecap="round"/>
+          <line id="hl1" x1="280" y1="22" x2="44" y2="288" stroke="transparent" stroke-width="0" stroke-linecap="round"/>
+          <line id="hl2" x1="44" y1="288" x2="516" y2="288" stroke="transparent" stroke-width="0" stroke-linecap="round"/>
+          <line id="hl3" x1="280" y1="22" x2="516" y2="288" stroke="transparent" stroke-width="0" stroke-linecap="round"/>
+          <polygon points="280,22 44,288 162,155" fill="transparent" style="cursor:pointer" onclick="selS(1)"/>
+          <polygon points="44,288 516,288 280,288" fill="transparent" style="cursor:pointer" onclick="selS(2)"/>
+          <polygon points="280,22 516,288 398,155" fill="transparent" style="cursor:pointer" onclick="selS(3)"/>
+          <circle id="cv0" cx="280" cy="22" r="5" fill="#888780"/>
+          <circle id="cv1" cx="44" cy="288" r="5" fill="#888780"/>
+          <circle id="cv2" cx="516" cy="288" r="5" fill="#888780"/>
+          <text id="lt" x="280" y="11" text-anchor="middle" font-size="13" font-weight="600" fill="#3d3d3a">Zeit</text>
+          <text id="lq" x="20" y="296" text-anchor="start" font-size="13" font-weight="600" fill="#3d3d3a">Qualität</text>
+          <text id="lr" x="540" y="296" text-anchor="end" font-size="13" font-weight="600" fill="#3d3d3a">Ressourcen</text>
+          <text id="el1" x="148" y="154" text-anchor="middle" font-size="10" fill="#9c9a92" transform="rotate(-52,148,154)">S1</text>
+          <text id="el2" x="280" y="304" text-anchor="middle" font-size="10" fill="#9c9a92">S2</text>
+          <text id="el3" x="412" y="154" text-anchor="middle" font-size="10" fill="#9c9a92" transform="rotate(52,412,154)">S3</text>
+          <text id="clbl" x="280" y="172" text-anchor="middle" font-size="12" fill="#9c9a92">↑ Szenario wählen</text>
+          <g id="cdots"></g>
+        </svg>
+      </div>
+      <div class="det" id="detbox">
+        <div class="bgs" id="dbgs"></div>
+        <div class="dett" id="dtt"></div>
+        <div class="detb" id="dtb"></div>
+        <div class="detr"><span>↗</span><span id="dtr"></span></div>
+        <div class="exp-row">
+          <button class="eb" onclick="expTxt()" id="betxt">Als Text kopieren</button>
+          <button class="eb" onclick="expPDF()" id="bepdf">PDF speichern</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div id="panel-qz" class="panel">
+      <div class="qg">
+        <div class="qb">
+          <label id="q1l">Wie dringend ist die Lage?</label>
+          <div class="qh" id="q1h">1 = kein Zeitdruck · 5 = sofort handeln</div>
+          <div class="sr"><input type="range" min="1" max="5" value="3" step="1" id="su" oninput="document.getElementById('vu').textContent=this.value"><span class="sv" id="vu">3</span></div>
+        </div>
+        <div class="qb">
+          <label id="q2l">Wie knapp ist das Budget?</label>
+          <div class="qh" id="q2h">1 = flexibel · 5 = sehr limitiert</div>
+          <div class="sr"><input type="range" min="1" max="5" value="3" step="1" id="sb" oninput="document.getElementById('vb').textContent=this.value"><span class="sv" id="vb">3</span></div>
+        </div>
+        <div class="qb">
+          <label id="q3l">Qualitätsanspruch?</label>
+          <div class="qh" id="q3h">1 = grobe Einschätzung · 5 = höchste Evidenz</div>
+          <div class="sr"><input type="range" min="1" max="5" value="3" step="1" id="sq" oninput="document.getElementById('vq').textContent=this.value"><span class="sv" id="vq">3</span></div>
+        </div>
+        <div class="qb">
+          <label id="q4l">Personalkapazität?</label>
+          <div class="qh" id="q4h">1 = minimal · 5 = ausreichend</div>
+          <div class="sr"><input type="range" min="1" max="5" value="3" step="1" id="ss" oninput="document.getElementById('vs').textContent=this.value"><span class="sv" id="vs">3</span></div>
+        </div>
+      </div>
+      <button class="sugbtn" onclick="runQ()" id="bsug">Szenario vorschlagen ↗</button>
+      <div class="sugbox" id="sugbox">
+        <div class="bgs" id="sgbgs"></div>
+        <div class="sh" id="sgh"></div>
+        <div class="sb" id="sgb"></div>
+        <button class="sap" onclick="applyS()" id="sap">Im Dreieck anzeigen →</button>
+      </div>
+    </div>
+
+    <!-- CUSTOM CASES -->
+    <div id="panel-cu" class="panel">
+      <div class="cform">
+        <div class="fr">
+          <div><div class="fl" id="fln">Fallbezeichnung</div><input class="fi" id="cfn" placeholder="z.B. Mpox-Ausbruch 2024"></div>
+          <div><div class="fl" id="flp">Priorität</div>
+            <select class="fi" id="cfp">
+              <option value="1">S1: Zeit + Qualität</option>
+              <option value="2">S2: Qualität + Ressourcen</option>
+              <option value="3">S3: Zeit + Ressourcen</option>
+            </select>
+          </div>
+        </div>
+        <div class="fa">
+          <div class="fl" id="fld">Kurzbeschreibung</div>
+          <textarea id="cfd" placeholder="Kontext und Entscheidungsgrundlage..."></textarea>
+        </div>
+        <div class="fr">
+          <div><div class="fl" id="flo">Organisation</div><input class="fi" id="cfo" placeholder="z.B. WHO/Europe"></div>
+          <div style="display:flex;align-items:flex-end"><button class="addb" onclick="addC()" id="badd">Fall hinzufügen</button></div>
+        </div>
+      </div>
+      <div class="clist" id="clist"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span id="ft-copy">© 2026 TAG RCCE-IM</span>
+  <span><a href="mailto:bstrahwald@ibe.med.uni-muenchen.de" id="ft-contact">Kontakt: bstrahwald@ibe.med.uni-muenchen.de</a></span>
+</footer>
+
+<script>
+var L='en', aS=null, sugS=null, cases=[];
+var SC={
+  1:{col:'#185FA5',bg:'rgba(24,95,165,.1)',lnId:'ln1',hlId:'hl1',elId:'el1',cv:[0,1],dotPos:[120,155]},
+  2:{col:'#0F6E56',bg:'rgba(15,110,86,.1)',lnId:'ln2',hlId:'hl2',elId:'el2',cv:[1,2],dotPos:[280,265]},
+  3:{col:'#993C1D',bg:'rgba(153,60,29,.1)',lnId:'ln3',hlId:'hl3',elId:'el3',cv:[0,2],dotPos:[440,155]}
+};
+var TX={
+  de:{tt:'RCCE-IM Decision Tool',ts:'Zeit – Qualität – Ressourcen',
+    t1:'Übersicht',t2:'Entscheidungshilfe',t3:'Eigene Fälle',
+    lt:'Zeit',lq:'Qualität',lr:'Ressourcen',hint:'↑ Szenario wählen',
+    q1:'Wie dringend ist die Lage?',q1h:'1 = kein Zeitdruck · 5 = sofort handeln',
+    q2:'Wie knapp ist das Budget?',q2h:'1 = flexibel · 5 = sehr limitiert',
+    q3:'Qualitätsanspruch?',q3h:'1 = grobe Einschätzung · 5 = höchste Evidenz',
+    q4:'Personalkapazität?',q4h:'1 = minimal · 5 = ausreichend',
+    bsug:'Szenario vorschlagen ↗',sap:'Im Dreieck anzeigen →',
+    etxt:'Als Text kopieren',epdf:'PDF speichern',
+    fln:'Fallbezeichnung',flp:'Priorität',fld:'Kurzbeschreibung',flo:'Organisation',badd:'Fall hinzufügen',cop:'Kopiert!',
+    ftcopy:'© 2026 TAG RCCE-IM',ftcontact:'Kontakt',
+    sc:{
+      1:{chip:'Szenario 1',name:'Zeit + Qualität',desc:'Schnell & evidenzbasiert',
+        title:'Ultra-rapid Review bei neuartigem Ausbruch',
+        body:'Bei einer neuen Infektionskrankheit werden evidenzbasierte Informationen für Fachkräfte in kürzester Zeit zusammengestellt. Budget und Personal werden sofort und flexibel eingesetzt.',
+        trade:'Ressourcen werden großzügig eingesetzt, um Geschwindigkeit und Qualität zu sichern.',
+        bgs:[{t:'Zeit',bg:'#E6F1FB',col:'#0C447C'},{t:'Qualität',bg:'#E1F5EE',col:'#085041'}]},
+      2:{chip:'Szenario 2',name:'Qualität + Ressourcen',desc:'Gründlich & kosteneffizient',
+        title:'Nationale Influenza-Impfkampagne',
+        body:'Mit ausreichend Vorlaufzeit werden Ressourcen effizient eingeplant. Formative Forschung, Stakeholder-Einbindung und Evidenzsynthese ermöglichen fundierte Kommunikationsmaterialien.',
+        trade:'Die Zeitplanung wird verlängert, um Qualität bei kontrolliertem Budget zu gewährleisten.',
+        bgs:[{t:'Qualität',bg:'#E1F5EE',col:'#085041'},{t:'Ressourcen',bg:'#FAECE7',col:'#712B13'}]},
+      3:{chip:'Szenario 3',name:'Zeit + Ressourcen',desc:'Schnell & ressourcensparend',
+        title:'Plötzliche Notlage mit knappem Budget',
+        body:'Bei einem unerwarteten Notfall mit begrenzten Mitteln muss schnell gehandelt werden. Ergebnisse sind möglicherweise weniger umfassend und können das Vertrauen belasten.',
+        trade:'Qualitätsabstriche sind unvermeidlich – nur wenn absolut notwendig einsetzen.',
+        bgs:[{t:'Zeit',bg:'#E6F1FB',col:'#0C447C'},{t:'Ressourcen',bg:'#FAECE7',col:'#712B13'},{t:'Vorsicht',bg:'#FAEEDA',col:'#633806'}]}},
+    st:{1:{h:'Empfehlung: Szenario 1 – Zeit + Qualität',b:'Hohe Dringlichkeit bei hohem Qualitätsanspruch. Planen Sie ausreichend Ressourcen ein und priorisieren Sie Geschwindigkeit und Evidenz.'},
+        2:{h:'Empfehlung: Szenario 2 – Qualität + Ressourcen',b:'Die Lage erlaubt sorgfältige Planung. Nehmen Sie sich die Zeit für eine fundierte Evidenzbasis bei effizienter Ressourcennutzung.'},
+        3:{h:'Empfehlung: Szenario 3 – Zeit + Ressourcen',b:'Hohe Dringlichkeit bei knappem Budget. Schnelles Handeln nötig – Qualitätseinschränkungen möglich, Risiken kommunizieren.'}},
+    po:['S1: Zeit + Qualität','S2: Qualität + Ressourcen','S3: Zeit + Ressourcen']},
+
+  en:{tt:'RCCE-IM Decision Tool',ts:'Time – Quality – Resources',
+    t1:'Overview',t2:'Decision Aid',t3:'Custom Cases',
+    lt:'Time',lq:'Quality',lr:'Resources',hint:'↑ Select a scenario',
+    q1:'How urgent is the situation?',q1h:'1 = no time pressure · 5 = act immediately',
+    q2:'How tight is the budget?',q2h:'1 = flexible · 5 = very limited',
+    q3:'Quality requirements?',q3h:'1 = rough estimate · 5 = highest evidence',
+    q4:'Staff capacity?',q4h:'1 = minimal · 5 = sufficient',
+    bsug:'Suggest scenario ↗',sap:'Show in triangle →',
+    etxt:'Copy as text',epdf:'Save PDF',
+    fln:'Case name',flp:'Priority',fld:'Short description',flo:'Organisation',badd:'Add case',cop:'Copied!',
+    ftcopy:'© 2026 TAG RCCE-IM',ftcontact:'Contact',
+    sc:{
+      1:{chip:'Scenario 1',name:'Time + Quality',desc:'Fast & evidence-based',
+        title:'Ultra-rapid review during novel outbreak',
+        body:'During a novel infectious disease, evidence-based information for health workers is compiled at speed. Budget and staff are deployed immediately and flexibly.',
+        trade:'Resources are used generously to ensure speed and quality.',
+        bgs:[{t:'Time',bg:'#E6F1FB',col:'#0C447C'},{t:'Quality',bg:'#E1F5EE',col:'#085041'}]},
+      2:{chip:'Scenario 2',name:'Quality + Resources',desc:'Thorough & cost-efficient',
+        title:'National seasonal influenza campaign',
+        body:'With sufficient lead time, resources are planned efficiently. Formative research, stakeholder engagement and evidence synthesis enable sound communication materials.',
+        trade:'Timeline is extended to ensure quality within a controlled budget.',
+        bgs:[{t:'Quality',bg:'#E1F5EE',col:'#085041'},{t:'Resources',bg:'#FAECE7',col:'#712B13'}]},
+      3:{chip:'Scenario 3',name:'Time + Resources',desc:'Fast & low-cost',
+        title:'Sudden emergency with limited budget',
+        body:'An unexpected emergency with constrained funding requires rapid action. Results may be less comprehensive and could affect public trust.',
+        trade:'Quality trade-offs are unavoidable – use only when absolutely necessary.',
+        bgs:[{t:'Time',bg:'#E6F1FB',col:'#0C447C'},{t:'Resources',bg:'#FAECE7',col:'#712B13'},{t:'Caution',bg:'#FAEEDA',col:'#633806'}]}},
+    st:{1:{h:'Recommendation: Scenario 1 – Time + Quality',b:'High urgency with high quality requirements. Allocate sufficient resources and prioritise speed and evidence quality.'},
+        2:{h:'Recommendation: Scenario 2 – Quality + Resources',b:'The situation allows careful planning. Take the time to build a solid evidence base with efficient resource use.'},
+        3:{h:'Recommendation: Scenario 3 – Time + Resources',b:'High urgency with a tight budget requires rapid action. Quality limitations are possible – apply with caution and communicate risks.'}},
+    po:['S1: Time + Quality','S2: Quality + Resources','S3: Time + Resources']},
+
+  fr:{tt:'Outil de décision RCCE-IM',ts:'Temps – Qualité – Ressources',
+    t1:'Aperçu',t2:'Aide à la décision',t3:'Cas personnalisés',
+    lt:'Temps',lq:'Qualité',lr:'Ressources',hint:'↑ Choisir un scénario',
+    q1:"Niveau d'urgence ?",q1h:'1 = aucune pression · 5 = agir immédiatement',
+    q2:'Budget serré ?',q2h:'1 = flexible · 5 = très limité',
+    q3:'Niveau de qualité requis ?',q3h:"1 = estimation · 5 = meilleure évidence",
+    q4:'Capacité en personnel ?',q4h:'1 = minimale · 5 = suffisante',
+    bsug:'Proposer un scénario ↗',sap:'Afficher dans le triangle →',
+    etxt:'Copier le texte',epdf:'Enregistrer PDF',
+    fln:'Nom du cas',flp:'Priorité',fld:'Brève description',flo:'Organisation',badd:'Ajouter le cas',cop:'Copié !',
+    ftcopy:'© 2026 TAG RCCE-IM',ftcontact:'Contact',
+    sc:{
+      1:{chip:'Scénario 1',name:'Temps + Qualité',desc:'Rapide & fondé sur les preuves',
+        title:"Revue ultra-rapide lors d'un foyer émergent",
+        body:"Lors d'une maladie infectieuse nouvelle, des informations factuelles sont compilées rapidement pour les professionnels de santé. Budget et personnel déployés immédiatement.",
+        trade:'Les ressources sont utilisées généreusement pour garantir rapidité et qualité.',
+        bgs:[{t:'Temps',bg:'#E6F1FB',col:'#0C447C'},{t:'Qualité',bg:'#E1F5EE',col:'#085041'}]},
+      2:{chip:'Scénario 2',name:'Qualité + Ressources',desc:'Rigoureux & rentable',
+        title:'Campagne nationale contre la grippe saisonnière',
+        body:"Avec un délai suffisant, les ressources sont planifiées efficacement. Recherche formative, engagement des parties prenantes et synthèse des données permettent des communications solides.",
+        trade:'Le calendrier est prolongé pour garantir la qualité dans un budget maîtrisé.',
+        bgs:[{t:'Qualité',bg:'#E1F5EE',col:'#085041'},{t:'Ressources',bg:'#FAECE7',col:'#712B13'}]},
+      3:{chip:'Scénario 3',name:'Temps + Ressources',desc:'Rapide & économique',
+        title:'Urgence soudaine avec budget restreint',
+        body:"Une urgence inattendue avec des fonds limités exige une action rapide. Les résultats peuvent être moins complets et affecter la confiance du public.",
+        trade:"Des compromis de qualité sont inévitables – à utiliser avec prudence.",
+        bgs:[{t:'Temps',bg:'#E6F1FB',col:'#0C447C'},{t:'Ressources',bg:'#FAECE7',col:'#712B13'},{t:'Prudence',bg:'#FAEEDA',col:'#633806'}]}},
+    st:{1:{h:'Recommandation : Scénario 1 – Temps + Qualité',b:"Urgence élevée avec exigences de qualité importantes. Allouez suffisamment de ressources et priorisez la rapidité et la qualité des preuves."},
+        2:{h:'Recommandation : Scénario 2 – Qualité + Ressources',b:"La situation permet une planification soigneuse. Prenez le temps de construire une base de preuves solide."},
+        3:{h:'Recommandation : Scénario 3 – Temps + Ressources',b:"Urgence élevée avec budget serré. Action rapide requise – des limitations de qualité sont possibles, communiquer les risques."}},
+    po:['S1 : Temps + Qualité','S2 : Qualité + Ressources','S3 : Temps + Ressources']},
+
+  es:{tt:'Herramienta de decisión RCCE-IM',ts:'Tiempo – Calidad – Recursos',
+    t1:'Resumen',t2:'Ayuda para decidir',t3:'Casos propios',
+    lt:'Tiempo',lq:'Calidad',lr:'Recursos',hint:'↑ Seleccionar escenario',
+    q1:'¿Cuál es el nivel de urgencia?',q1h:'1 = sin presión · 5 = actuar de inmediato',
+    q2:'¿Qué tan limitado es el presupuesto?',q2h:'1 = flexible · 5 = muy limitado',
+    q3:'¿Nivel de calidad requerido?',q3h:'1 = estimación básica · 5 = máxima evidencia',
+    q4:'¿Capacidad de personal disponible?',q4h:'1 = mínima · 5 = suficiente',
+    bsug:'Sugerir escenario ↗',sap:'Mostrar en el triángulo →',
+    etxt:'Copiar como texto',epdf:'Guardar PDF',
+    fln:'Nombre del caso',flp:'Prioridad',fld:'Descripción breve',flo:'Organización',badd:'Agregar caso',cop:'¡Copiado!',
+    ftcopy:'© 2026 TAG RCCE-IM',ftcontact:'Contacto',
+    sc:{
+      1:{chip:'Escenario 1',name:'Tiempo + Calidad',desc:'Rápido y basado en evidencia',
+        title:'Revisión ultra-rápida ante un brote emergente',
+        body:'Ante una nueva enfermedad infecciosa, se compila información basada en evidencia para los profesionales de salud en el menor tiempo posible. El presupuesto y el personal se movilizan de forma inmediata y flexible.',
+        trade:'Los recursos se utilizan generosamente para garantizar velocidad y calidad.',
+        bgs:[{t:'Tiempo',bg:'#E6F1FB',col:'#0C447C'},{t:'Calidad',bg:'#E1F5EE',col:'#085041'}]},
+      2:{chip:'Escenario 2',name:'Calidad + Recursos',desc:'Riguroso y rentable',
+        title:'Campaña nacional de vacunación contra la gripe',
+        body:'Con suficiente tiempo de planificación, los recursos se asignan de forma eficiente. La investigación formativa, la participación de las partes interesadas y la síntesis de evidencia permiten materiales de comunicación sólidos.',
+        trade:'El cronograma se amplía para garantizar la calidad dentro de un presupuesto controlado.',
+        bgs:[{t:'Calidad',bg:'#E1F5EE',col:'#085041'},{t:'Recursos',bg:'#FAECE7',col:'#712B13'}]},
+      3:{chip:'Escenario 3',name:'Tiempo + Recursos',desc:'Rápido y de bajo costo',
+        title:'Emergencia repentina con presupuesto limitado',
+        body:'Una emergencia inesperada con fondos limitados exige acción inmediata. Los resultados pueden ser menos completos y afectar la confianza pública.',
+        trade:'Las concesiones en calidad son inevitables – usar solo cuando sea absolutamente necesario.',
+        bgs:[{t:'Tiempo',bg:'#E6F1FB',col:'#0C447C'},{t:'Recursos',bg:'#FAECE7',col:'#712B13'},{t:'Precaución',bg:'#FAEEDA',col:'#633806'}]}},
+    st:{1:{h:'Recomendación: Escenario 1 – Tiempo + Calidad',b:'Alta urgencia con altos requisitos de calidad. Asigne suficientes recursos y priorice la velocidad y la calidad de la evidencia.'},
+        2:{h:'Recomendación: Escenario 2 – Calidad + Recursos',b:'La situación permite una planificación cuidadosa. Tómese el tiempo necesario para construir una base de evidencia sólida con un uso eficiente de los recursos.'},
+        3:{h:'Recomendación: Escenario 3 – Tiempo + Recursos',b:'Alta urgencia con presupuesto limitado. Se requiere acción rápida – las limitaciones de calidad son posibles, comunicar los riesgos.'}},
+    po:['E1: Tiempo + Calidad','E2: Calidad + Recursos','E3: Tiempo + Recursos']}
+};
+
+function tx(k){return TX[L][k]}
+function sc(n){return TX[L].sc[n]}
+
+function setL(l){
+  L=l;
+  document.querySelectorAll('.lb').forEach(function(b){b.classList.toggle('on',b.textContent===l.toUpperCase())});
+  applyTx();renderCards();
+  if(aS)showDet(aS);
+}
+
+function applyTx(){
+  document.getElementById('tt').textContent=tx('tt');
+  document.getElementById('ts').textContent=tx('ts');
+  document.getElementById('tab-ov').textContent=tx('t1');
+  document.getElementById('tab-qz').textContent=tx('t2');
+  document.getElementById('tab-cu').textContent=tx('t3');
+  document.getElementById('lt').textContent=tx('lt');
+  document.getElementById('lq').textContent=tx('lq');
+  document.getElementById('lr').textContent=tx('lr');
+  document.getElementById('clbl').textContent=aS?sc(aS).chip:tx('hint');
+  document.getElementById('q1l').textContent=tx('q1');document.getElementById('q1h').textContent=tx('q1h');
+  document.getElementById('q2l').textContent=tx('q2');document.getElementById('q2h').textContent=tx('q2h');
+  document.getElementById('q3l').textContent=tx('q3');document.getElementById('q3h').textContent=tx('q3h');
+  document.getElementById('q4l').textContent=tx('q4');document.getElementById('q4h').textContent=tx('q4h');
+  document.getElementById('bsug').textContent=tx('bsug');
+  document.getElementById('betxt').textContent=tx('etxt');
+  document.getElementById('bepdf').textContent=tx('epdf');
+  document.getElementById('fln').textContent=tx('fln');
+  document.getElementById('flp').textContent=tx('flp');
+  document.getElementById('fld').textContent=tx('fld');
+  document.getElementById('flo').textContent=tx('flo');
+  document.getElementById('badd').textContent=tx('badd');
+  document.getElementById('ft-copy').textContent=tx('ftcopy');
+  document.getElementById('ft-contact').textContent=tx('ftcontact')+': bstrahwald@ibe.med.uni-muenchen.de';
+  var sap=document.getElementById('sap');if(sap)sap.textContent=tx('sap');
+  var sel=document.getElementById('cfp');
+  tx('po').forEach(function(o,i){if(sel.options[i])sel.options[i].text=o});
+  renderCases();
+}
+
+function renderCards(){
+  var h='';
+  [1,2,3].forEach(function(n){
+    var s=sc(n),cls=aS===n?' as'+n:'';
+    h+='<div class="sc'+cls+'" onclick="selS('+n+')">'
+      +'<div class="chip s'+n+'">'+s.chip+'</div>'
+      +'<div class="scname">'+s.name+'</div>'
+      +'<div class="scdesc">'+s.desc+'</div></div>';
+  });
+  document.getElementById('scards').innerHTML=h;
+}
+
+function selS(n){aS=n;renderCards();showDet(n);updTri(n);showTab('ov')}
+
+function updTri(n){
+  [1,2,3].forEach(function(i){
+    var s=SC[i];
+    document.getElementById(s.lnId).setAttribute('stroke','rgba(0,0,0,0.15)');
+    document.getElementById(s.lnId).setAttribute('stroke-width','1.5');
+    document.getElementById(s.hlId).setAttribute('stroke','transparent');
+    document.getElementById(s.hlId).setAttribute('stroke-width','0');
+    document.getElementById(s.elId).setAttribute('fill','#9c9a92');
+    document.getElementById('cv'+s.cv[0]).setAttribute('fill','#888780');
+    document.getElementById('cv'+s.cv[1]).setAttribute('fill','#888780');
+  });
+  document.getElementById('tfill').setAttribute('fill','transparent');
+  if(!n){
+    document.getElementById('clbl').setAttribute('fill','#9c9a92');
+    document.getElementById('clbl').textContent=tx('hint');
+    return;
+  }
+  var s=SC[n],col=s.col;
+  document.getElementById('tfill').setAttribute('fill',s.bg);
+  document.getElementById(s.lnId).setAttribute('stroke',col);
+  document.getElementById(s.lnId).setAttribute('stroke-width','5');
+  document.getElementById(s.hlId).setAttribute('stroke',col);
+  document.getElementById(s.hlId).setAttribute('stroke-width','12');
+  document.getElementById(s.hlId).setAttribute('stroke-opacity','0.18');
+  document.getElementById(s.hlId).setAttribute('filter','url(#glow2)');
+  document.getElementById(s.elId).setAttribute('fill',col);
+  document.getElementById('cv'+s.cv[0]).setAttribute('fill',col);
+  document.getElementById('cv'+s.cv[1]).setAttribute('fill',col);
+  document.getElementById('clbl').setAttribute('fill',col);
+  document.getElementById('clbl').textContent=sc(n).chip;
+}
+
+function showDet(n){
+  var s=sc(n),box=document.getElementById('detbox');
+  box.className='det on';
+  document.getElementById('dtt').textContent=s.title;
+  document.getElementById('dtb').textContent=s.body;
+  document.getElementById('dtr').textContent=s.trade;
+  document.getElementById('dbgs').innerHTML=s.bgs.map(function(b){
+    return '<span class="bg" style="background:'+b.bg+';color:'+b.col+'">'+b.t+'</span>';
+  }).join('');
+}
+
+function showTab(id){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on')});
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on')});
+  document.getElementById('panel-'+id).classList.add('on');
+  document.getElementById('tab-'+id).classList.add('on');
+}
+
+function runQ(){
+  var u=+document.getElementById('su').value;
+  var b=+document.getElementById('sb').value;
+  var q=+document.getElementById('sq').value;
+  var n=(u>=4&&q>=4)?1:(u>=4&&b>=4)?3:2;
+  sugS=n;
+  var st=TX[L].st[n],s=sc(n),col=SC[n].col,bg=SC[n].bg;
+  var box=document.getElementById('sugbox');
+  box.style.background=bg;
+  box.style.border='.5px solid '+col+'55';
+  box.style.borderRadius='10px';
+  box.style.padding='14px 16px';
+  box.className='sugbox on';
+  document.getElementById('sgbgs').innerHTML=s.bgs.map(function(b2){
+    return '<span class="bg" style="background:'+b2.bg+';color:'+b2.col+'">'+b2.t+'</span>';
+  }).join('');
+  document.getElementById('sgh').textContent=st.h;
+  document.getElementById('sgh').style.color=col;
+  document.getElementById('sgb').textContent=st.b;
+  document.getElementById('sap').textContent=tx('sap');
+}
+
+function applyS(){if(sugS)selS(sugS)}
+
+function expTxt(){
+  if(!aS)return;
+  var s=sc(aS);
+  var txt=s.chip+': '+s.name+'\n\n'+s.title+'\n\n'+s.body+'\n\n'+s.trade+'\n\nRCCE-IM Decision Tool · WHO/Europe TAG';
+  try{navigator.clipboard.writeText(txt)}catch(e){}
+  var b=document.getElementById('betxt'),old=b.textContent;
+  b.textContent=tx('cop');setTimeout(function(){b.textContent=old},2000);
+}
+
+function expPDF(){
+  if(!aS)return;
+  var s=sc(aS);
+  var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+s.chip+' – RCCE-IM</title>'
+    +'<style>body{font-family:Helvetica,Arial,sans-serif;padding:48px;max-width:620px;margin:0 auto;color:#222}'
+    +'h1{font-size:22px;font-weight:700;margin:10px 0 4px}h2{font-size:15px;font-weight:500;color:#555;margin-bottom:18px}'
+    +'p{font-size:14px;line-height:1.75;color:#444}'
+    +'.trade{font-size:13px;color:#777;border-top:1px solid #e8e8e8;padding-top:14px;margin-top:18px}'
+    +'.foot{font-size:11px;color:#bbb;margin-top:48px;padding-top:12px;border-top:1px solid #eee;display:flex;justify-content:space-between}'
+    +'.chip{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#fff;background:#185FA5;padding:4px 10px;border-radius:20px;margin-bottom:8px}'
+    +'</style></head><body>'
+    +'<span class="chip">'+s.chip+'</span>'
+    +'<h1>'+s.name+'</h1>'
+    +'<h2>'+s.title+'</h2>'
+    +'<p>'+s.body+'</p>'
+    +'<div class="trade">'+s.trade+'</div>'
+    +'<div class="foot"><span>© 2026 TAG RCCE-IM</span><span>'+new Date().toLocaleDateString()+'</span></div>'
+    +'</body></html>';
+  var w=window.open('','_blank');
+  if(w){w.document.write(html);w.document.close();setTimeout(function(){w.print()},300)}
+}
+
+function addC(){
+  var n=document.getElementById('cfn').value.trim();
+  if(!n)return;
+  cases.push({name:n,
+    desc:document.getElementById('cfd').value.trim(),
+    org:document.getElementById('cfo').value.trim(),
+    prio:+document.getElementById('cfp').value,
+    id:Date.now()});
+  document.getElementById('cfn').value='';
+  document.getElementById('cfd').value='';
+  document.getElementById('cfo').value='';
+  renderCases();renderDots();
+}
+
+function delC(id){
+  cases=cases.filter(function(c){return c.id!==id});
+  renderCases();renderDots();
+}
+
+function renderCases(){
+  if(!cases.length){document.getElementById('clist').innerHTML='';return}
+  document.getElementById('clist').innerHTML=cases.map(function(c){
+    return '<div class="ci"><div>'
+      +'<div class="cit">'+c.name+'</div>'
+      +'<div class="cim" style="color:'+SC[c.prio].col+'">'+sc(c.prio).chip+(c.org?' · '+c.org:'')+'</div>'
+      +(c.desc?'<div class="cim" style="margin-top:3px">'+c.desc+'</div>':'')
+      +'</div><button class="cdel" onclick="delC('+c.id+')">×</button></div>';
+  }).join('');
+}
+
+function renderDots(){
+  var g=document.getElementById('cdots');g.innerHTML='';
+  var off=[[0,0],[-14,10],[14,10],[-9,-12],[9,-12]];
+  cases.forEach(function(c,i){
+    var bp=SC[c.prio].dotPos,o=off[i%off.length];
+    var cx=bp[0]+o[0],cy=bp[1]+o[1],col=SC[c.prio].col;
+    var el=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    el.setAttribute('cx',cx);el.setAttribute('cy',cy);el.setAttribute('r',8);
+    el.setAttribute('fill',col);el.setAttribute('fill-opacity','0.2');
+    el.setAttribute('stroke',col);el.setAttribute('stroke-width','1.5');
+    var ti=document.createElementNS('http://www.w3.org/2000/svg','title');
+    ti.textContent=c.name+(c.org?' ('+c.org+')':'');el.appendChild(ti);
+    g.appendChild(el);
+    var t2=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t2.setAttribute('x',cx);t2.setAttribute('y',cy+4);
+    t2.setAttribute('text-anchor','middle');t2.setAttribute('font-size','9');
+    t2.setAttribute('fill',col);t2.setAttribute('font-weight','700');
+    t2.textContent=String(i+1);g.appendChild(t2);
+  });
+}
+
+renderCards();
+applyTx();
+</script>
+</body>
+</html>
